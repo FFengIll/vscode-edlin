@@ -1,0 +1,82 @@
+{
+    "name": "edlin",
+    "displayName": "edlin",
+    "description": "",
+    "version": "0.0.2",
+    "publisher": "FengYouzheng",
+    "engines": {
+        "vscode": "^1.10.0"
+    },
+    "categories": [
+        "Other"
+    ],
+    "activationEvents": [
+        "onCommand:extension.sayHello",
+        "onCommand:extension.trim",
+        "onCommand:extension.ltrim",
+        "onCommand:extension.rtrim",
+        "onCommand:extension.removeEmptyLine"
+    ],
+    "main": "./out/src/extension",
+    "contributes": {
+        "commands": [
+            {
+                "command": "extension.sayHello",
+                "title": "Hello World"
+            },
+            {
+                "command": "extension.trim",
+                "title": "Trim"
+            },
+            {
+                "command": "extension.ltrim",
+                "title": "Trim Left / Head"
+            },
+            {
+                "command": "extension.rtrim",
+                "title": "Trim Right / Tail"
+            },
+            {
+                "command": "extension.removeEmptyLine",
+                "title": "Remove Empty Line"
+            }
+        ],
+        "menus": {
+            "editor/context": [
+                {
+                    "when": "editorHasSelection",
+                    "command": "extension.trim",
+                    "group": "navigation"
+                },
+                {
+                    "when": "editorHasSelection",
+                    "command": "extension.ltrim",
+                    "group": "navigation"
+                },
+                {
+                    "when": "editorHasSelection",
+                    "command": "extension.rtrim",
+                    "group": "navigation"
+                },
+                {
+                    "when": "editorHasSelection",
+                    "command": "extension.removeEmptyLine",
+                    "group": "navigation"
+                }
+            ]
+        }
+    },
+    "scripts": {
+        "vscode:prepublish": "tsc -p ./",
+        "compile": "tsc -watch -p ./",
+        "postinstall": "node ./node_modules/vscode/bin/install",
+        "test": "node ./node_modules/vscode/bin/test"
+    },
+    "devDependencies": {
+        "typescript": "^2.0.3",
+        "vscode": "^1.0.0",
+        "mocha": "^2.3.3",
+        "@types/node": "^6.0.40",
+        "@types/mocha": "^2.2.32"
+    }
+}
