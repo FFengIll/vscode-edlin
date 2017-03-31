@@ -5,7 +5,12 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [0.0.3] - 2017-03-31
+### Fixed
+- Can not remove blank lines in files which use LF(\n) but CRLF(\r\n).
 
+### Changed
+- If no splitor selected, use the default one (\t).
 
 ## [0.0.2] - 2017-03-29
 ### Changed
@@ -19,25 +24,3 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [0.0.0] - 2017-03-28
 - Initial release
-
-
-## [Unreleased] (Guide)
-### Added
-- zh-CN and zh-TW translations from @tianshuo.
-- de translation from @mpbzh.
-- it-IT translation from @roalz.
-- sv translation from @magol.
-- tr-TR translation from @karalamalar.
-- fr translation from @zapashcanon.
-
-### Changed
-- Start versioning based on the current English version at 0.3.0 to help
-translation authors keep things up-to-date.
-- Fix typos in zh-CN translation.
-- Fix typos in pt-BR translation.
-
-## [0.3.0] - 2015-12-03
-### Added
-- RU translation from @aishek.
-- pt-BR translation from @tallesl.
-- es-ES translation from @ZeliosAriex.
