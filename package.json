@@ -11,56 +11,66 @@
         "Other"
     ],
     "activationEvents": [
-        "onCommand:extension.sayHello",
-        "onCommand:extension.trim",
-        "onCommand:extension.ltrim",
-        "onCommand:extension.rtrim",
-        "onCommand:extension.removeEmptyLine"
+        "onCommand:edlin.sayHello",
+        "onCommand:edlin.trim",
+        "onCommand:edlin.ltrim",
+        "onCommand:edlin.rtrim",
+        "onCommand:edlin.setSplitor",
+        "onCommand:edlin.split",
+        "onCommand:edlin.removeBlankLine"
     ],
     "main": "./out/src/extension",
     "contributes": {
         "commands": [
             {
-                "command": "extension.sayHello",
-                "title": "Hello World"
-            },
-            {
-                "command": "extension.trim",
+                "command": "edlin.trim",
                 "title": "Trim"
             },
             {
-                "command": "extension.ltrim",
+                "command": "edlin.ltrim",
                 "title": "Trim Left / Head"
             },
             {
-                "command": "extension.rtrim",
+                "command": "edlin.rtrim",
                 "title": "Trim Right / Tail"
             },
             {
-                "command": "extension.removeEmptyLine",
-                "title": "Remove Empty Line"
+                "command": "edlin.removeBlankLine",
+                "title": "Remove Blank Line"
+            },
+            {
+                "command": "edlin.setSplitor",
+                "title": "Set splitor"
+            },
+            {
+                "command": "edlin.split",
+                "title": "Split"
             }
         ],
         "menus": {
-            "editor/context": [
-                {
+            "editor/context": [{
                     "when": "editorHasSelection",
-                    "command": "extension.trim",
+                    "command": "edlin.trim",
                     "group": "navigation"
                 },
                 {
                     "when": "editorHasSelection",
-                    "command": "extension.ltrim",
+                    "command": "edlin.ltrim",
                     "group": "navigation"
                 },
                 {
                     "when": "editorHasSelection",
-                    "command": "extension.rtrim",
+                    "command": "edlin.rtrim",
                     "group": "navigation"
                 },
                 {
                     "when": "editorHasSelection",
-                    "command": "extension.removeEmptyLine",
+                    "command": "edlin.removeBlankLine",
+                    "group": "navigation"
+                },
+                {
+                    "when": "editorHasSelection",
+                    "command": "edlin.split",
                     "group": "navigation"
                 }
             ]

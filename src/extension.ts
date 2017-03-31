@@ -9,7 +9,6 @@ const COMMAND = 'process';
 const CONTEXT_SAVE = 'save';
 const CONTEXT_COMMAND = 'command';
 
-
 // configuration definition
 interface ExtensionConfig {
     keepOneEmptyLine?: boolean;
@@ -26,9 +25,77 @@ let config: ExtensionConfig = {
     languageIds: ['javascript', 'typescript', 'json']
 };
 
+//default use the tab as splitor
+const DEFAULT_SPLITOR = '\t';
+let splitor = DEFAULT_SPLITOR;
+
+function setSplitor(event) {
+    // get active text editor
+    var editor = vscode.window.activeTextEditor;
+
+    var selection = editor.selection;
+    splitor = editor.document.getText(selection);
+    //if no splitor given, use default
+    if(splitor.length<=0){
+        splitor=DEFAULT_SPLITOR;
+    }
+}
+
+function split(event) {
+    // get active text editor
+    var editor = vscode.window.activeTextEditor;
+
+    // do nothing if 'doAction' was triggered by save and 'removeOnSave' is set to false
+    if (event === CONTEXT_SAVE && config.triggerOnSave !== true) return;
+
+    // do nothing if no open text editor
+    if (!editor) return;
+
+    //get selection
+    var selections = editor.selections;
+    selections.forEach(selection => {
+        var text = editor.document.getText(selection);//.split('\r\n');
+        var processed = text.split(splitor);
+        editor.edit((edit) => {
+            edit.replace(selection, processed.join('\n'));
+        });
+    });
+}
+
+function split2(event) {
+    // get active text editor
+    var editor = vscode.window.activeTextEditor;
+
+    // do nothing if 'doAction' was triggered by save and 'removeOnSave' is set to false
+    if (event === CONTEXT_SAVE && config.triggerOnSave !== true) return;
+
+    // do nothing if no open text editor
+    if (!editor) return;
+
+    //get selection
+    var selections = editor.selections;
+    selections.forEach(selection => {
+        //get selection info of the cursor
+        var start = selection.start;
+        var end = selection.end;
+
+        //get line text (*note* the select is splitor
+        var textline = editor.document.lineAt(start);
+        var line = start.line;
+        var number = end.character;
+
+        var text = textline.text;//.split('\r\n');
+        var processed = text.split(splitor);
+        editor.edit((edit) => {
+            //edit.replace(new vscode.Position(line,number), processed.join('\n'));
+            edit.replace(textline.range, processed.join('\n'));
+        });
+    });
+}
+
 
 // remove empty lines
-function removeEmpty(event) {
+function removeBlankLine(event) {
 
     // get active text editor
     var editor = vscode.window.activeTextEditor;
@@ -39,14 +106,17 @@ function removeEmpty(event) {
     // do nothing if no open text editor
     if (!editor) return;
 
-        //get selection
+    //get selection
     var selections = editor.selections;
     selections.forEach(selection => {
-        var text = editor.document.getText(selection).split('\r\n');
+        //split by \n to match all types
+        var text = editor.document.getText(selection).split('\n');
 
-        //get the non-empty line only
-        var ptext=text.filter((l)=>{return l.trim().length>0});
-      
+        //get the non-blank line only
+        var ptext = text.filter((l) => {
+            return l.trim().length > 0
+        });
+
 
         // format text
         editor.edit((edit) => {
@@ -58,6 +128,7 @@ function removeEmpty(event) {
 function ltrim(str) { //删除左边的空格
     return str.replace(/(^\s*)/g, "");
 }
+
 function rtrim(str) { //删除右边的空格
     return str.replace(/(\s*$)/g, "");
 }
@@ -80,19 +151,19 @@ function doTrim(event, side) {
         // this where magic happens
         var ptext = [];
         switch (side) {
-            case 0://left
+            case 0: //left
                 text.forEach(l => {
                     l = ltrim(l);
                     ptext.push(l);
                 });
                 break;
-            case 1://right
+            case 1: //right
                 text.forEach(l => {
                     l = rtrim(l);
                     ptext.push(l);
                 });
                 break;
-            default://both side
+            default: //both side
                 text.forEach(l => {
                     l = l.trim();
                     ptext.push(l);
@@ -121,36 +192,41 @@ export function activate(context: vscode.ExtensionContext) {
     // The command has been defined in the package.json file
     // Now provide the implementation of the command with  registerCommand
     // The commandId parameter must match the command field in package.json
-    let disposable = vscode.commands.registerCommand('extension.sayHello', () => {
-        // The code you place here will be executed every time your command is executed
-
-        // Display a message box to the user
-        vscode.window.showInformationMessage('Hello World!');
-    });
-
-    context.subscriptions.push(disposable);
+    var disposable=null;
 
     //add commands of trim
-    disposable = vscode.commands.registerCommand('extension.trim', () => {
+    disposable = vscode.commands.registerCommand('edlin.trim', () => {
         doTrim(CONTEXT_COMMAND, 2);
     });
     context.subscriptions.push(disposable);
-    disposable = vscode.commands.registerCommand('extension.ltrim', () => {
+    disposable = vscode.commands.registerCommand('edlin.ltrim', () => {
         doTrim(CONTEXT_COMMAND, 0);
     });
     context.subscriptions.push(disposable);
-    disposable = vscode.commands.registerCommand('extension.rtrim', () => {
+    disposable = vscode.commands.registerCommand('edlin.rtrim', () => {
         doTrim(CONTEXT_COMMAND, 1);
     });
     context.subscriptions.push(disposable);
 
+//add cmd to remove blank
+    disposable = vscode.commands.registerCommand('edlin.removeBlankLine', () => {
+        removeBlankLine(CONTEXT_COMMAND);
+    });
     context.subscriptions.push(disposable);
-    disposable = vscode.commands.registerCommand('extension.removeEmptyLine', () => {
-        removeEmpty(CONTEXT_COMMAND);
+
+//add cmd for splitting
+    disposable = vscode.commands.registerCommand('edlin.setSplitor', () => {
+        setSplitor(CONTEXT_COMMAND);
+    });
+    context.subscriptions.push(disposable);
+
+    disposable = vscode.commands.registerCommand('edlin.split', () => {
+        setSplitor(CONTEXT_COMMAND);
+        split2(CONTEXT_COMMAND);
+        //split(CONTEXT_COMMAND);
     });
     context.subscriptions.push(disposable);
 }
 
 // this method is called when your extension is deactivated
-export function deactivate() {
-}
+export function deactivate() { }
