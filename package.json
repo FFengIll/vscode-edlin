@@ -2,7 +2,7 @@
     "name": "edlin",
     "displayName": "edlin",
     "description": "",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "publisher": "FengYouzheng",
     "engines": {
         "vscode": "^1.10.0"
@@ -48,7 +48,8 @@
             }
         ],
         "menus": {
-            "editor/context": [{
+            "editor/context": [
+                {
                     "when": "editorHasSelection",
                     "command": "edlin.trim",
                     "group": "navigation"
