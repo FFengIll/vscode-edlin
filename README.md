@@ -1,10 +1,5 @@
 # edlin README
-
-This is the README for the extension "edlin".
-
-[//]: # (After writing up a brief description, we recommend including the following sections.)
-
-This extension will help you to complete some useful line editing, so it is edlin.
+This extension will help to edit line, so it is edlin.
 
 ## Features
 ### Edit
@@ -52,7 +47,7 @@ All features completed.
 
 Initial release of edlin.
 
-## Acknowledgments
+# Acknowledgments
 Thanks to "上位者的怜悯" and "rintoj".
 > http://www.cnblogs.com/lianmin/p/5499266.html
 

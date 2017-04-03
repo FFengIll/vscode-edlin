@@ -29,19 +29,22 @@ let config: ExtensionConfig = {
 const DEFAULT_SPLITOR = '\t';
 let splitor = DEFAULT_SPLITOR;
 
-function setSplitor(event) {
+function getSplitor() {
     // get active text editor
     var editor = vscode.window.activeTextEditor;
 
     var selection = editor.selection;
     splitor = editor.document.getText(selection);
     //if no splitor given, use default
-    if(splitor.length<=0){
-        splitor=DEFAULT_SPLITOR;
+    if (splitor.length <= 0) {
+        splitor = DEFAULT_SPLITOR;
     }
+
+    return splitor;
 }
 
 function split(event) {
+
     // get active text editor
     var editor = vscode.window.activeTextEditor;
 
@@ -52,40 +55,21 @@ function split(event) {
     if (!editor) return;
 
     //get selection
-    var selections = editor.selections;
-    selections.forEach(selection => {
-        var text = editor.document.getText(selection);//.split('\r\n');
-        var processed = text.split(splitor);
-        editor.edit((edit) => {
-            edit.replace(selection, processed.join('\n'));
-        });
-    });
-}
-
-function split2(event) {
-    // get active text editor
-    var editor = vscode.window.activeTextEditor;
-
-    // do nothing if 'doAction' was triggered by save and 'removeOnSave' is set to false
-    if (event === CONTEXT_SAVE && config.triggerOnSave !== true) return;
-
-    // do nothing if no open text editor
-    if (!editor) return;
-
-    //get selection
+    var doc=editor.document;
     var selections = editor.selections;
     selections.forEach(selection => {
         //get selection info of the cursor
         var start = selection.start;
-        var end = selection.end;
 
-        //get line text (*note* the select is splitor
-        var textline = editor.document.lineAt(start);
-        var line = start.line;
-        var number = end.character;
+        //get line text (*note* the select is splitor only but we wanna split line)
+        var textline = doc.lineAt(start);
 
+        //do split
+        var splitor = getSplitor();
         var text = textline.text;//.split('\r\n');
         var processed = text.split(splitor);
+
+        //replace in edit
         editor.edit((edit) => {
             //edit.replace(new vscode.Position(line,number), processed.join('\n'));
             edit.replace(textline.range, processed.join('\n'));
@@ -192,7 +176,7 @@ export function activate(context: vscode.ExtensionContext) {
     // The command has been defined in the package.json file
     // Now provide the implementation of the command with  registerCommand
     // The commandId parameter must match the command field in package.json
-    var disposable=null;
+    var disposable = null;
 
     //add commands of trim
     disposable = vscode.commands.registerCommand('edlin.trim', () => {
@@ -208,22 +192,14 @@ export function activate(context: vscode.ExtensionContext) {
     });
     context.subscriptions.push(disposable);
 
-//add cmd to remove blank
+    //add cmd to remove blank
     disposable = vscode.commands.registerCommand('edlin.removeBlankLine', () => {
         removeBlankLine(CONTEXT_COMMAND);
     });
     context.subscriptions.push(disposable);
 
-//add cmd for splitting
-    disposable = vscode.commands.registerCommand('edlin.setSplitor', () => {
-        setSplitor(CONTEXT_COMMAND);
-    });
-    context.subscriptions.push(disposable);
-
     disposable = vscode.commands.registerCommand('edlin.split', () => {
-        setSplitor(CONTEXT_COMMAND);
-        split2(CONTEXT_COMMAND);
-        //split(CONTEXT_COMMAND);
+        split(CONTEXT_COMMAND);
     });
     context.subscriptions.push(disposable);
 }

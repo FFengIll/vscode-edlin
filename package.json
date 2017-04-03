@@ -1,8 +1,14 @@
 {
     "name": "edlin",
     "displayName": "edlin",
-    "description": "",
-    "version": "0.0.3",
+    "description": "Trim, remove blank and split for line edit (so it is edlin)",
+    "author": {
+        "name": "FengYouzheng"
+    },
+    "repository": {
+        "url": "https://github.com/FengYouzheng/vscode-edlin"
+    },
+    "version": "0.0.4",
     "publisher": "FengYouzheng",
     "engines": {
         "vscode": "^1.10.0"
@@ -15,14 +21,12 @@
         "onCommand:edlin.trim",
         "onCommand:edlin.ltrim",
         "onCommand:edlin.rtrim",
-        "onCommand:edlin.setSplitor",
         "onCommand:edlin.split",
         "onCommand:edlin.removeBlankLine"
     ],
     "main": "./out/src/extension",
     "contributes": {
-        "commands": [
-            {
+        "commands": [{
                 "command": "edlin.trim",
                 "title": "Trim"
             },
@@ -39,17 +43,12 @@
                 "title": "Remove Blank Line"
             },
             {
-                "command": "edlin.setSplitor",
-                "title": "Set splitor"
-            },
-            {
                 "command": "edlin.split",
                 "title": "Split"
             }
         ],
         "menus": {
-            "editor/context": [
-                {
+            "editor/context": [{
                     "when": "editorHasSelection",
                     "command": "edlin.trim",
                     "group": "navigation"
