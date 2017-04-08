@@ -8,7 +8,7 @@
     "repository": {
         "url": "https://github.com/FengYouzheng/vscode-edlin"
     },
-    "version": "0.0.4",
+    "version": "0.0.5",
     "publisher": "FengYouzheng",
     "engines": {
         "vscode": "^1.10.0"
@@ -26,7 +26,8 @@
     ],
     "main": "./out/src/extension",
     "contributes": {
-        "commands": [{
+        "commands": [
+            {
                 "command": "edlin.trim",
                 "title": "Trim"
             },
@@ -48,7 +49,8 @@
             }
         ],
         "menus": {
-            "editor/context": [{
+            "editor/context": [
+                {
                     "when": "editorHasSelection",
                     "command": "edlin.trim",
                     "group": "navigation"
