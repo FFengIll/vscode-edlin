@@ -55,7 +55,7 @@ function split(event) {
     if (!editor) return;
 
     //get selection
-    var doc=editor.document;
+    var doc = editor.document;
     var selections = editor.selections;
     selections.forEach(selection => {
         //get selection info of the cursor
@@ -73,6 +73,35 @@ function split(event) {
         editor.edit((edit) => {
             //edit.replace(new vscode.Position(line,number), processed.join('\n'));
             edit.replace(textline.range, processed.join('\n'));
+        });
+    });
+}
+
+function combine(event) {
+
+    // get active text editor
+    var editor = vscode.window.activeTextEditor;
+
+    // do nothing if 'doAction' was triggered by save and 'removeOnSave' is set to false
+    if (event === CONTEXT_SAVE && config.triggerOnSave !== true) return;
+
+    // do nothing if no open text editor
+    if (!editor) return;
+
+    //get selection
+    var doc = editor.document;
+    var selections = editor.selections;
+    selections.forEach(selection => {
+        //get range
+        let start = selection.start;
+        let end = selection.end;
+
+        //get lines except \r\n
+        var text = editor.document.getText(selection).split('\r\n');
+
+        //replace in edit
+        editor.edit((edit) => {
+            edit.replace(new vscode.Range(start, end), text.join(''));
         });
     });
 }
@@ -100,7 +129,6 @@ function removeBlankLine(event) {
         var ptext = text.filter((l) => {
             return l.trim().length > 0
         });
-
 
         // format text
         editor.edit((edit) => {
@@ -155,14 +183,11 @@ function doTrim(event, side) {
                 break;
         }
 
-
         // format text
         editor.edit((edit) => {
             edit.replace(selection, ptext.join('\n'));
         });
-
     });
-
 }
 
 // this method is called when your extension is activated
@@ -171,7 +196,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Use the console to output diagnostic information (console.log) and errors (console.error)
     // This line of code will only be executed once when your extension is activated
-    console.log('Congratulations, your extension "column-edit" is now active!');
+    //console.log('Congratulations, your extension "column-edit" is now active!');
 
     // The command has been defined in the package.json file
     // Now provide the implementation of the command with  registerCommand
@@ -200,6 +225,11 @@ export function activate(context: vscode.ExtensionContext) {
 
     disposable = vscode.commands.registerCommand('edlin.split', () => {
         split(CONTEXT_COMMAND);
+    });
+    context.subscriptions.push(disposable);
+
+    disposable = vscode.commands.registerCommand('edlin.combine', () => {
+        combine(CONTEXT_COMMAND);
     });
     context.subscriptions.push(disposable);
 }

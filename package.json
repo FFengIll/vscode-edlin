@@ -8,7 +8,7 @@
     "repository": {
         "url": "https://github.com/FengYouzheng/vscode-edlin"
     },
-    "version": "0.0.5",
+    "version": "0.0.6",
     "publisher": "FengYouzheng",
     "engines": {
         "vscode": "^1.10.0"
@@ -22,6 +22,7 @@
         "onCommand:edlin.ltrim",
         "onCommand:edlin.rtrim",
         "onCommand:edlin.split",
+        "onCommand:edlin.combine",
         "onCommand:edlin.removeBlankLine"
     ],
     "main": "./out/src/extension",
@@ -45,7 +46,11 @@
             },
             {
                 "command": "edlin.split",
-                "title": "Split"
+                "title": "Split Line"
+            },
+            {
+                "command": "edlin.combine",
+                "title": "Combine Line"
             }
         ],
         "menus": {
@@ -53,27 +58,32 @@
                 {
                     "when": "editorHasSelection",
                     "command": "edlin.trim",
-                    "group": "navigation"
+                    "group": "edlin@1"
                 },
                 {
                     "when": "editorHasSelection",
                     "command": "edlin.ltrim",
-                    "group": "navigation"
+                    "group": "edlin@1"
                 },
                 {
                     "when": "editorHasSelection",
                     "command": "edlin.rtrim",
-                    "group": "navigation"
+                    "group": "edlin@1"
                 },
                 {
                     "when": "editorHasSelection",
                     "command": "edlin.removeBlankLine",
-                    "group": "navigation"
+                    "group": "edlin@1"
                 },
                 {
                     "when": "editorHasSelection",
                     "command": "edlin.split",
-                    "group": "navigation"
+                    "group": "edlin@1"
+                },
+                {
+                    "when": "editorHasSelection",
+                    "command": "edlin.combine",
+                    "group": "edlin@1"
                 }
             ]
         }

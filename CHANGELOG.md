@@ -5,6 +5,13 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [0.0.6] - 2017-04-27
+### Fixed
+- Group of the plugins into spec group.
+
+### Added
+- Combine lines into one line (default join with nothing).
+
 ## [0.0.3] - 2017-03-31
 ### Fixed
 - Can not remove blank lines in files which use LF(\n) but CRLF(\r\n).
