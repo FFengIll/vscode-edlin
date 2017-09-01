@@ -6,59 +6,29 @@ This extension will help to edit line, so it is edlin.
 - Trim (left, right or both) the selected lines.
 - Remove the blank lines in selection.
 - Split current line by the selected (as splitor).
+- No sort of lines (vscode build-in).
 
 ### Menu
 - Context menu for trim, remove blank lines.
 
-### Others
-- No sort of lines (vscode build-in).
-
-### Image/Animation
-
-[//]: # (!\[feature X\]\(images/feature-x.png\))
-
-
-## Extension Settings 
-
-> Extension adds some VS Code settings through the `contributes.configuration` extension point.
-
-[//]: # (This extension contributes the following settings:)
-
-[//]: # (* `myExtension.enable`: enable/disable this extension)
-
-
 ## Known Issues
-
 [//]: # (Calling out known issues can help limit users opening duplicate issues against your extension.)
-
-[0.0.2] (fixed) Can not remove blank line in some file. It comes from the wrong splitor.
+* [0.1.0] (fixed) MacOS can not use the trim function.
+* [0.0.2] (fixed) Can not remove blank line in some file. It comes from the wrong splitor.
 
 ## Release Notes
-
-[//]: # (Users appreciate release notes as you update your extension.)
-
 May see the catalog for details.
+ * [0.1.0] Support Windows, Unix, and MacOS now.
+ * [0.0.3] All features completed.
+ * [0.0.1] Initial release of edlin.
 
-### 0.0.3
+# Misc
+Thanks to [上位者的怜悯](http://www.cnblogs.com/lianmin/p/5499266.html
+)
+and [rintoj](https://github.com/rintoj/blank-line-organizer).
 
-All features completed.
+Source code in [Github](https://github.com/FengYouzheng/vscode-edlin)
+obey [MIT Lisence](https://mit-license.org/).
 
-### 0.0.1
-
-Initial release of edlin.
-
-# Acknowledgments
-Thanks to "上位者的怜悯" and "rintoj".
-> http://www.cnblogs.com/lianmin/p/5499266.html
-
-> https://github.com/rintoj/blank-line-organizer
-
-
-# License
-
-[MIT](https://mit-license.org/)
-
-# Source
-[Github](https://github.com/FengYouzheng/vscode-edlin)
 
 **Enjoy!**

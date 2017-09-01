@@ -82,9 +82,6 @@ function combine(event) {
     // get active text editor
     var editor = vscode.window.activeTextEditor;
 
-    // do nothing if 'doAction' was triggered by save and 'removeOnSave' is set to false
-    if (event === CONTEXT_SAVE && config.triggerOnSave !== true) return;
-
     // do nothing if no open text editor
     if (!editor) return;
 
@@ -112,9 +109,6 @@ function removeBlankLine(event) {
 
     // get active text editor
     var editor = vscode.window.activeTextEditor;
-
-    // do nothing if 'doAction' was triggered by save and 'removeOnSave' is set to false
-    if (event === CONTEXT_SAVE && config.triggerOnSave !== true) return;
 
     // do nothing if no open text editor
     if (!editor) return;
@@ -149,16 +143,24 @@ function doTrim(event, side) {
     // get active text editor
     var editor = vscode.window.activeTextEditor;
 
-    // do nothing if 'doAction' was triggered by save and 'removeOnSave' is set to false
-    if (event === CONTEXT_SAVE && config.triggerOnSave !== true) return;
-
     // do nothing if no open text editor
     if (!editor) return;
 
     //get selection
     var selections = editor.selections;
-    selections.forEach(selection => {
-        var text = editor.document.getText(selection).split('\r\n');
+    selections.forEach(selection => { 
+        var select=editor.document.getText(selection);
+
+        //wanna support windows, unix, mac
+        var splitor='\n';
+        if(select.includes('\r\n')){
+            splitor='\r\n';
+        }else if(select.includes('\r')){
+            splitor='\r';
+        }else{
+            splitor='\n'
+        }
+        var text =select.split(splitor);
 
         // this where magic happens
         var ptext = [];

@@ -5,6 +5,10 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [0.1.0] - 2017-09-01
+### Fixed
+- Trim can not work under MacOS for '\r'.
+
 ## [0.0.6] - 2017-04-27
 ### Fixed
 - Group of the plugins into spec group.
