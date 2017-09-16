@@ -8,7 +8,7 @@
     "repository": {
         "url": "https://github.com/FengYouzheng/vscode-edlin"
     },
-    "version": "0.1.1",
+    "version": "0.2.0",
     "publisher": "FengYouzheng",
     "engines": {
         "vscode": "^1.10.0"
@@ -21,6 +21,7 @@
         "onCommand:edlin.trim",
         "onCommand:edlin.ltrim",
         "onCommand:edlin.rtrim",
+        "onCommand:edlin.splitAndKeep",
         "onCommand:edlin.split",
         "onCommand:edlin.combine",
         "onCommand:edlin.removeBlankLine"
@@ -47,6 +48,10 @@
             {
                 "command": "edlin.split",
                 "title": "Split Line"
+            },
+            {
+                "command": "edlin.splitAndKeep",
+                "title": "Split Line (keep)"
             },
             {
                 "command": "edlin.combine",
@@ -78,6 +83,11 @@
                 {
                     "when": "editorHasSelection",
                     "command": "edlin.split",
+                    "group": "edlin@1"
+                },
+                {
+                    "when": "editorHasSelection",
+                    "command": "edlin.splitAndKeep",
                     "group": "edlin@1"
                 },
                 {

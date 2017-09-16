@@ -43,7 +43,25 @@ function getSplitor() {
     return splitor;
 }
 
-function split(event) {
+function getNewLine(textline:String){
+    //wanna support all system (new line characters)
+    var candidate:Array<string>=['\r\n','\r','\n'];
+    
+    var endline='\r\n';
+    for (var id in candidate) {
+        var element=candidate[id];
+        var last=textline.indexOf(element);
+        //must have last=-1 if not found 
+        if (last>=0){
+            endline=element;
+            break;
+        }
+    }
+    
+    return endline;
+}
+
+function split(event,keep=false) {
 
     // get active text editor
     var editor = vscode.window.activeTextEditor;
@@ -66,13 +84,13 @@ function split(event) {
 
         //do split
         var splitor = getSplitor();
-        var text = textline.text;//.split('\r\n');
-        var processed = text.split(splitor);
+        var newline = getNewLine(textline.text)
+        var text = textline.text.split(splitor);
 
         //replace in edit
         editor.edit((edit) => {
-            //edit.replace(new vscode.Position(line,number), processed.join('\n'));
-            edit.replace(textline.range, processed.join('\n'));
+            if(keep){edit.replace(textline.range, text.join(splitor+newline));}
+            else{edit.replace(textline.range, text.join(newline));}
         });
     });
 }
@@ -93,8 +111,9 @@ function combine(event) {
         let start = selection.start;
         let end = selection.end;
 
-        //get lines except \r\n
-        var text = editor.document.getText(selection).split('\r\n');
+        var select=editor.document.getText(selection);
+        var newline=getNewLine(select);
+        var text = select.split(newline);
 
         //replace in edit
         editor.edit((edit) => {
@@ -116,8 +135,9 @@ function removeBlankLine(event) {
     //get selection
     var selections = editor.selections;
     selections.forEach(selection => {
-        //split by \n to match all types
-        var text = editor.document.getText(selection).split('\n');
+        var select=editor.document.getText(selection);
+        var newline=getNewLine(select);
+        var text = select.split(newline);
 
         //get the non-blank line only
         var ptext = text.filter((l) => {
@@ -126,7 +146,7 @@ function removeBlankLine(event) {
 
         // format text
         editor.edit((edit) => {
-            edit.replace(selection, ptext.join('\n'));
+            edit.replace(selection, ptext.join(newline));
         });
     });
 }
@@ -150,17 +170,8 @@ function doTrim(event, side) {
     var selections = editor.selections;
     selections.forEach(selection => { 
         var select=editor.document.getText(selection);
-
-        //wanna support windows, unix, mac
-        var splitor='\n';
-        if(select.includes('\r\n')){
-            splitor='\r\n';
-        }else if(select.includes('\r')){
-            splitor='\r';
-        }else{
-            splitor='\n'
-        }
-        var text =select.split(splitor);
+        var newline=getNewLine(select);
+        var text = select.split(newline);
 
         // this where magic happens
         var ptext = [];
@@ -187,7 +198,7 @@ function doTrim(event, side) {
 
         // format text
         editor.edit((edit) => {
-            edit.replace(selection, ptext.join('\n'));
+            edit.replace(selection, ptext.join(newline));
         });
     });
 }
@@ -227,6 +238,11 @@ export function activate(context: vscode.ExtensionContext) {
 
     disposable = vscode.commands.registerCommand('edlin.split', () => {
         split(CONTEXT_COMMAND);
+    });
+    context.subscriptions.push(disposable);
+    
+    disposable = vscode.commands.registerCommand('edlin.splitAndKeep', () => {
+        split(CONTEXT_COMMAND,true);
     });
     context.subscriptions.push(disposable);
 
