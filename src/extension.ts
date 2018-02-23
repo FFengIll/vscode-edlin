@@ -2,6 +2,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
+import * as utils from './utils';
 
 // constance
 const NAME = 'blankLine';
@@ -35,34 +36,18 @@ function getSplitor() {
 
     var selection = editor.selection;
     splitor = editor.document.getText(selection);
+    /*
     //if no splitor given, use default
     if (splitor.length <= 0) {
         splitor = DEFAULT_SPLITOR;
     }
+    */
 
     return splitor;
 }
 
-function getNewLine(textline:String){
-    //wanna support all system (new line characters)
-    var candidate:Array<string>=['\r\n','\r','\n'];
-    
-    var endline='\r\n';
-    for (var id in candidate) {
-        var element=candidate[id];
-        var last=textline.indexOf(element);
-        //must have last=-1 if not found 
-        if (last>=0){
-            endline=element;
-            break;
-        }
-    }
-    
-    return endline;
-}
 
-function split(event,keep=false) {
-
+function index(event) {
     // get active text editor
     var editor = vscode.window.activeTextEditor;
 
@@ -76,21 +61,48 @@ function split(event,keep=false) {
     var doc = editor.document;
     var selections = editor.selections;
     selections.forEach(selection => {
+        var start = new vscode.Position(selection.start.line, 0);
+        var end = new vscode.Position(selection.end.line, selection.end.character);
+        var select = editor.document.getText(new vscode.Range(start, end));
+
+        var res = utils.do_index(select);
+
+        //replace in edit
+        editor.edit((edit) => {
+            edit.replace(selection, res);
+
+        });
+    });
+}
+
+function split(event, keep = false) {
+
+    // get active text editor
+    var editor = vscode.window.activeTextEditor;
+
+    // do nothing if 'doAction' was triggered by save and 'removeOnSave' is set to false
+    if (event === CONTEXT_SAVE && config.triggerOnSave !== true) return;
+
+    // do nothing if no open text editor
+    if (!editor) return;
+
+    //get selection
+	var splitor = getSplitor();
+    var doc = editor.document;
+    var selections = editor.selections;
+    selections.forEach(selection => {
         //get selection info of the cursor
         var start = selection.start;
 
         //get line text (*note* the select is splitor only but we wanna split line)
-        var textline = doc.lineAt(start);
+        var vsline = doc.lineAt(start);
 
-        //do split
-        var splitor = getSplitor();
-        var newline = getNewLine(textline.text)
-        var text = textline.text.split(splitor);
+        var res = utils.do_split(vsline.text, splitor, keep);
 
         //replace in edit
         editor.edit((edit) => {
-            if(keep){edit.replace(textline.range, text.join(splitor+newline));}
-            else{edit.replace(textline.range, text.join(newline));}
+            edit.replace(vsline.range, res);
+
         });
     });
 }
@@ -111,20 +123,19 @@ function combine(event) {
         let start = selection.start;
         let end = selection.end;
 
-        var select=editor.document.getText(selection);
-        var newline=getNewLine(select);
-        var text = select.split(newline);
+        var select = editor.document.getText(selection);
+        var res = utils.do_combine(select);
 
         //replace in edit
         editor.edit((edit) => {
-            edit.replace(new vscode.Range(start, end), text.join(''));
+            edit.replace(new vscode.Range(start, end), res);
         });
     });
 }
 
 
 // remove empty lines
-function removeBlankLine(event) {
+function removeBlankLines(event) {
 
     // get active text editor
     var editor = vscode.window.activeTextEditor;
@@ -135,31 +146,16 @@ function removeBlankLine(event) {
     //get selection
     var selections = editor.selections;
     selections.forEach(selection => {
-        var select=editor.document.getText(selection);
-        var newline=getNewLine(select);
-        var text = select.split(newline);
-
-        //get the non-blank line only
-        var ptext = text.filter((l) => {
-            return l.trim().length > 0
-        });
-
+        var select = editor.document.getText(selection);
+        var res = utils.do_remove(select);
         // format text
         editor.edit((edit) => {
-            edit.replace(selection, ptext.join(newline));
+            edit.replace(selection, res);
         });
     });
 }
 
-function ltrim(str) { //删除左边的空格
-    return str.replace(/(^\s*)/g, "");
-}
-
-function rtrim(str) { //删除右边的空格
-    return str.replace(/(\s*$)/g, "");
-}
-
-function doTrim(event, side) {
+function trimLines(event, side) {
     // get active text editor
     var editor = vscode.window.activeTextEditor;
 
@@ -168,37 +164,13 @@ function doTrim(event, side) {
 
     //get selection
     var selections = editor.selections;
-    selections.forEach(selection => { 
-        var select=editor.document.getText(selection);
-        var newline=getNewLine(select);
-        var text = select.split(newline);
-
-        // this where magic happens
-        var ptext = [];
-        switch (side) {
-            case 0: //left
-                text.forEach(l => {
-                    l = ltrim(l);
-                    ptext.push(l);
-                });
-                break;
-            case 1: //right
-                text.forEach(l => {
-                    l = rtrim(l);
-                    ptext.push(l);
-                });
-                break;
-            default: //both side
-                text.forEach(l => {
-                    l = l.trim();
-                    ptext.push(l);
-                });
-                break;
-        }
+    selections.forEach(selection => {
+        var select = editor.document.getText(selection);
+        var res = utils.do_trim(select, side);
 
         // format text
         editor.edit((edit) => {
-            edit.replace(selection, ptext.join(newline));
+            edit.replace(selection, res);
         });
     });
 }
@@ -217,22 +189,26 @@ export function activate(context: vscode.ExtensionContext) {
     var disposable = null;
 
     //add commands of trim
+    disposable = vscode.commands.registerCommand('edlin.index', () => {
+        index(CONTEXT_COMMAND);
+    });
+    context.subscriptions.push(disposable);
     disposable = vscode.commands.registerCommand('edlin.trim', () => {
-        doTrim(CONTEXT_COMMAND, 2);
+        trimLines(CONTEXT_COMMAND, utils.Side.BOTH);
     });
     context.subscriptions.push(disposable);
     disposable = vscode.commands.registerCommand('edlin.ltrim', () => {
-        doTrim(CONTEXT_COMMAND, 0);
+        trimLines(CONTEXT_COMMAND, utils.Side.LEFT);
     });
     context.subscriptions.push(disposable);
     disposable = vscode.commands.registerCommand('edlin.rtrim', () => {
-        doTrim(CONTEXT_COMMAND, 1);
+        trimLines(CONTEXT_COMMAND, utils.Side.RIGHT);
     });
     context.subscriptions.push(disposable);
 
     //add cmd to remove blank
     disposable = vscode.commands.registerCommand('edlin.removeBlankLine', () => {
-        removeBlankLine(CONTEXT_COMMAND);
+        removeBlankLines(CONTEXT_COMMAND);
     });
     context.subscriptions.push(disposable);
 
@@ -240,9 +216,9 @@ export function activate(context: vscode.ExtensionContext) {
         split(CONTEXT_COMMAND);
     });
     context.subscriptions.push(disposable);
-    
+
     disposable = vscode.commands.registerCommand('edlin.splitAndKeep', () => {
-        split(CONTEXT_COMMAND,true);
+        split(CONTEXT_COMMAND, true);
     });
     context.subscriptions.push(disposable);
 

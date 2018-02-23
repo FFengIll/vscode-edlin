@@ -1,14 +1,14 @@
 {
     "name": "edlin",
     "displayName": "edlin",
-    "description": "Trim, remove blank and split for line edit (so it is edlin)",
+    "description": "Trim, Remove, Split, Combine, Index for Line Edit (so it is Edlin)",
     "author": {
         "name": "FengYouzheng"
     },
     "repository": {
         "url": "https://github.com/FengYouzheng/vscode-edlin"
     },
-    "version": "0.2.0",
+    "version": "0.3.0",
     "publisher": "FengYouzheng",
     "engines": {
         "vscode": "^1.10.0"
@@ -17,7 +17,6 @@
         "Other"
     ],
     "activationEvents": [
-        "onCommand:edlin.sayHello",
         "onCommand:edlin.trim",
         "onCommand:edlin.ltrim",
         "onCommand:edlin.rtrim",
@@ -28,38 +27,56 @@
     ],
     "main": "./out/src/extension",
     "contributes": {
+        "title": "Edlin",
         "commands": [
             {
+                "category": "Edlin",
+                "command": "edlin.index",
+                "title": "Index"
+            },
+            {
+                "category": "Edlin",
                 "command": "edlin.trim",
                 "title": "Trim"
             },
             {
+                "category": "Edlin",
                 "command": "edlin.ltrim",
-                "title": "Trim Left / Head"
+                "title": "Trim Left (Head)"
             },
             {
+                "category": "Edlin",
                 "command": "edlin.rtrim",
-                "title": "Trim Right / Tail"
+                "title": "Trim Right (Tail)"
             },
             {
+                "category": "Edlin",
                 "command": "edlin.removeBlankLine",
-                "title": "Remove Blank Line"
+                "title": "Remove Blank Lines"
             },
             {
+                "category": "Edlin",
                 "command": "edlin.split",
                 "title": "Split Line"
             },
             {
+                "category": "Edlin",
                 "command": "edlin.splitAndKeep",
-                "title": "Split Line (keep)"
+                "title": "Split Line (Keep)"
             },
             {
+                "category": "Edlin",
                 "command": "edlin.combine",
                 "title": "Combine Line"
             }
         ],
         "menus": {
             "editor/context": [
+                {
+                    "when": "editorHasSelection",
+                    "command": "edlin.index",
+                    "group": "edlin@1"
+                },
                 {
                     "when": "editorHasSelection",
                     "command": "edlin.trim",

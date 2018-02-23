@@ -1,15 +1,21 @@
 # edlin README
 This extension will help to edit line, so it is edlin.
 
+## Usage
+- Select the text / line at first.
+- Click right button and get the menu list.
+- Then, choose the function you wanna!
+
 ## Features
 ### Edit
 - Trim (left, right or both) the selected lines.
 - Remove the blank lines in selection.
-- Split current line by the selected (as splitor) (can keep splitor or not).
+- Split current one line by the selected word (as splitor) (can keep splitor or not).
+- (TODO) Index the selected lines. 
 - No sort of lines (vscode build-in).
 
 ### Menu
-- Context menu for trim, remove blank lines.
+- Context menu for all edline function above.
 
 ## Known Issues
 [//]: # (Calling out known issues can help limit users opening duplicate issues against your extension.)
@@ -19,6 +25,7 @@ This extension will help to edit line, so it is edlin.
 
 ## Release Notes
 May see the catalog for details.
+ * [0.3.0] Add command category for convenience; Add a simple index function.
  * [0.2.0] Update the support of Windows, Unix, and MacOS.
  * [0.1.0] Support Windows, Unix, and MacOS now.
  * [0.0.3] All features completed.
@@ -31,6 +38,5 @@ and [rintoj](https://github.com/rintoj/blank-line-organizer).
 
 Source code in [Github](https://github.com/FengYouzheng/vscode-edlin)
 obey [MIT Lisence](https://mit-license.org/).
-
 
 **Enjoy!**
