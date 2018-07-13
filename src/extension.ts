@@ -46,8 +46,27 @@ function getSplitor() {
     return splitor;
 }
 
+function action_index(editor, id = 1) {
+    //get selection
+    var doc = editor.document;
+    var selections = editor.selections;
+    selections.forEach(selection => {
+        var start = new vscode.Position(selection.start.line, 0);
+        var end = new vscode.Position(selection.end.line, selection.end.character);
+        var target = new vscode.Range(start, end);
+        var select = editor.document.getText(target);
 
-function index(event) {
+        var res = utils.do_index(select, id);
+
+        //replace in edit
+        editor.edit((edit) => {
+            edit.replace(target, res);
+
+        });
+    });
+}
+
+function cmd_indexWith(event) {
     // get active text editor
     var editor = vscode.window.activeTextEditor;
 
@@ -57,22 +76,25 @@ function index(event) {
     // do nothing if no open text editor
     if (!editor) return;
 
-    //get selection
-    var doc = editor.document;
-    var selections = editor.selections;
-    selections.forEach(selection => {
-        var start = new vscode.Position(selection.start.line, 0);
-        var end = new vscode.Position(selection.end.line, selection.end.character);
-        var select = editor.document.getText(new vscode.Range(start, end));
+    vscode.window.showInputBox({ prompt: 'combine (join) with' }).then(
+        id_str => {
+            var id = parseInt(id_str);
+            action_index(editor, id);
+        }
+    )
+}
 
-        var res = utils.do_index(select);
+function cmd_index(event) {
+    // get active text editor
+    var editor = vscode.window.activeTextEditor;
 
-        //replace in edit
-        editor.edit((edit) => {
-            edit.replace(selection, res);
+    // do nothing if 'doAction' was triggered by save and 'removeOnSave' is set to false
+    if (event === CONTEXT_SAVE && config.triggerOnSave !== true) return;
 
-        });
-    });
+    // do nothing if no open text editor
+    if (!editor) return;
+
+    action_index(editor, 1);
 }
 
 function split(event, keep = false) {
@@ -87,7 +109,7 @@ function split(event, keep = false) {
     if (!editor) return;
 
     //get selection
-	var splitor = getSplitor();
+    var splitor = getSplitor();
     var doc = editor.document;
     var selections = editor.selections;
     selections.forEach(selection => {
@@ -107,8 +129,7 @@ function split(event, keep = false) {
     });
 }
 
-function combine(event) {
-
+function action_combine(join_str: String = '') {
     // get active text editor
     var editor = vscode.window.activeTextEditor;
 
@@ -124,13 +145,26 @@ function combine(event) {
         let end = selection.end;
 
         var select = editor.document.getText(selection);
-        var res = utils.do_combine(select);
+        var res = utils.do_combine(select, join_str);
 
         //replace in edit
         editor.edit((edit) => {
             edit.replace(new vscode.Range(start, end), res);
         });
     });
+}
+
+function cmd_combine(event) {
+    action_combine('');
+}
+
+
+function cmd_combineWith(event) {
+    vscode.window.showInputBox({ prompt: 'combine (join) with' }).then(
+        join_str => {
+            action_combine(join_str);
+        }
+    )
 }
 
 
@@ -188,11 +222,17 @@ export function activate(context: vscode.ExtensionContext) {
     // The commandId parameter must match the command field in package.json
     var disposable = null;
 
-    //add commands of trim
+    //index
     disposable = vscode.commands.registerCommand('edlin.index', () => {
-        index(CONTEXT_COMMAND);
+        cmd_index(CONTEXT_COMMAND);
     });
     context.subscriptions.push(disposable);
+    disposable = vscode.commands.registerCommand('edlin.indexWith', () => {
+        cmd_indexWith(CONTEXT_COMMAND);
+    });
+    context.subscriptions.push(disposable);
+
+    // trim
     disposable = vscode.commands.registerCommand('edlin.trim', () => {
         trimLines(CONTEXT_COMMAND, utils.Side.BOTH);
     });
@@ -212,6 +252,7 @@ export function activate(context: vscode.ExtensionContext) {
     });
     context.subscriptions.push(disposable);
 
+    //split
     disposable = vscode.commands.registerCommand('edlin.split', () => {
         split(CONTEXT_COMMAND);
     });
@@ -222,8 +263,14 @@ export function activate(context: vscode.ExtensionContext) {
     });
     context.subscriptions.push(disposable);
 
+    //combine
     disposable = vscode.commands.registerCommand('edlin.combine', () => {
-        combine(CONTEXT_COMMAND);
+        cmd_combine(CONTEXT_COMMAND);
+    });
+    context.subscriptions.push(disposable);
+
+    disposable = vscode.commands.registerCommand('edlin.combineWith', () => {
+        cmd_combineWith(CONTEXT_COMMAND);
     });
     context.subscriptions.push(disposable);
 }

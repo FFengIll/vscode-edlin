@@ -1,3 +1,5 @@
+import { type } from "os";
+
 'use strict';
 
 export enum Side {
@@ -20,20 +22,26 @@ export function getNewLine(textline: String) {
             break;
         }
     }
+
     return endline;
 }
 
-export function do_index(select) {
-    var tag = '.';
-    var newline = getNewLine(select);
-    var lines = select.split(newline);
-    var index = 1;
-    for (var key in lines) {
-        lines[key] = index + tag + ' ' + lines[key];
-        index++;
-    }
+function update_index(index){
+    index +=1;
+    return index;
+}
 
-    return lines.join(newline);
+export function do_index(select:String,index:String | number) {
+    var tag  = '.';
+    var res = [];
+    var newline  = getNewLine(select);
+    select.split(newline).forEach(element => {
+        var temp = index + tag + ' ' + element;
+        res.push(temp);
+        index = update_index(index);
+    });
+   
+    return res.join(newline);
 }
 
 function ltrim(str) { //删除左边的空格
@@ -56,11 +64,13 @@ export function do_split(select, splitor, keep: Boolean) {
     }
     return res;
 }
-export function do_combine(select) {
+
+export function do_combine(select, join_str:String='') {
     var newline = getNewLine(select);
     var lines = select.split(newline);
-    return lines.join('');
+    return lines.join(join_str);
 }
+
 export function do_remove(select) {
     var newline = getNewLine(select);
     var text = select.split(newline);
