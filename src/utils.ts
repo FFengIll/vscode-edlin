@@ -26,21 +26,21 @@ export function getNewLine(textline: String) {
     return endline;
 }
 
-function update_index(index){
-    index +=1;
+function update_index(index) {
+    index += 1;
     return index;
 }
 
-export function do_index(select:String,index:String | number) {
-    var tag  = '.';
+export function do_index(select: String, index: String | number) {
+    var tag = '.';
     var res = [];
-    var newline  = getNewLine(select);
+    var newline = getNewLine(select);
     select.split(newline).forEach(element => {
         var temp = index + tag + ' ' + element;
         res.push(temp);
         index = update_index(index);
     });
-   
+
     return res.join(newline);
 }
 
@@ -51,9 +51,18 @@ function ltrim(str) { //删除左边的空格
 function rtrim(str) { //删除右边的空格
     return str.replace(/(\s*$)/g, "");
 }
-export function do_split(select, splitor, keep: Boolean) {
 
+export function do_split_line(select): string[] {
+    var newline = getNewLine(select);
+    var lines = select.split(newline);
+    return lines;
+}
 
+export function do_combine_line(lines, newline) {
+    return lines.join(newline);
+}
+
+export function do_split(select, splitor, keep: Boolean = false) {
     var newline = getNewLine(select);
     var lines = select.split(splitor);
     var res = '';
@@ -65,7 +74,7 @@ export function do_split(select, splitor, keep: Boolean) {
     return res;
 }
 
-export function do_combine(select, join_str:String='') {
+export function do_combine(select, join_str: String = '') {
     var newline = getNewLine(select);
     var lines = select.split(newline);
     return lines.join(join_str);

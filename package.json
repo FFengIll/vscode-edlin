@@ -17,8 +17,9 @@
         "Other"
     ],
     "activationEvents": [
+        "onCommand:edlin.wrap",
         "onCommand:edlin.index",
-        "onCommand:edlin.indexWith",
+        "onCommand:edlin.indexFrom",
         "onCommand:edlin.trim",
         "onCommand:edlin.ltrim",
         "onCommand:edlin.rtrim",
@@ -34,13 +35,18 @@
         "commands": [
             {
                 "category": "Edlin",
+                "command": "edlin.wrap",
+                "title": "Wrap Line"
+            },
+            {
+                "category": "Edlin",
                 "command": "edlin.index",
                 "title": "Index"
             },
             {
                 "category": "Edlin",
-                "command": "edlin.indexWith",
-                "title": "Index With"
+                "command": "edlin.indexFrom",
+                "title": "Index From"
             },
             {
                 "category": "Edlin",
@@ -75,16 +81,21 @@
             {
                 "category": "Edlin",
                 "command": "edlin.combine",
-                "title": "Combine Line"
+                "title": "Combine"
             },
             {
                 "category": "Edlin",
                 "command": "edlin.combineWith",
-                "title": "Combine Line With"
+                "title": "Combine With"
             }
         ],
         "menus": {
             "editor/context": [
+                {
+                    "when": "editorHasSelection",
+                    "command": "edlin.wrap",
+                    "group": "edlin@1"
+                },
                 {
                     "when": "editorHasSelection",
                     "command": "edlin.index",
@@ -92,7 +103,7 @@
                 },
                 {
                     "when": "editorHasSelection",
-                    "command": "edlin.indexWith",
+                    "command": "edlin.indexFrom",
                     "group": "edlin@1"
                 },
                 {

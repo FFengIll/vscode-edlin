@@ -3,6 +3,7 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import * as utils from './utils';
+import { join } from 'path';
 
 // constance
 const NAME = 'blankLine';
@@ -50,23 +51,24 @@ function action_index(editor, id = 1) {
     //get selection
     var doc = editor.document;
     var selections = editor.selections;
+    console.log('index from: ' + id);
     selections.forEach(selection => {
         var start = new vscode.Position(selection.start.line, 0);
         var end = new vscode.Position(selection.end.line, selection.end.character);
-        var target = new vscode.Range(start, end);
-        var select = editor.document.getText(target);
+        var range = new vscode.Range(start, end);
+        var text = editor.document.getText(range);
 
-        var res = utils.do_index(select, id);
+        var res = utils.do_index(text, id);
 
         //replace in edit
         editor.edit((edit) => {
-            edit.replace(target, res);
+            edit.replace(range, res);
 
         });
     });
 }
 
-function cmd_indexWith(event) {
+function cmd_indexFrom(event) {
     // get active text editor
     var editor = vscode.window.activeTextEditor;
 
@@ -76,7 +78,7 @@ function cmd_indexWith(event) {
     // do nothing if no open text editor
     if (!editor) return;
 
-    vscode.window.showInputBox({ prompt: 'combine (join) with' }).then(
+    vscode.window.showInputBox({ prompt: 'index with' }).then(
         id_str => {
             var id = parseInt(id_str);
             action_index(editor, id);
@@ -139,13 +141,14 @@ function action_combine(join_str: String = '') {
     //get selection
     var doc = editor.document;
     var selections = editor.selections;
+    console.log('combine with: ' + join_str);
     selections.forEach(selection => {
         //get range
         let start = selection.start;
         let end = selection.end;
 
-        var select = editor.document.getText(selection);
-        var res = utils.do_combine(select, join_str);
+        var text = editor.document.getText(selection);
+        var res = utils.do_combine(text, join_str);
 
         //replace in edit
         editor.edit((edit) => {
@@ -170,7 +173,6 @@ function cmd_combineWith(event) {
 
 // remove empty lines
 function removeBlankLines(event) {
-
     // get active text editor
     var editor = vscode.window.activeTextEditor;
 
@@ -180,8 +182,8 @@ function removeBlankLines(event) {
     //get selection
     var selections = editor.selections;
     selections.forEach(selection => {
-        var select = editor.document.getText(selection);
-        var res = utils.do_remove(select);
+        var text = editor.document.getText(selection);
+        var res = utils.do_remove(text);
         // format text
         editor.edit((edit) => {
             edit.replace(selection, res);
@@ -199,14 +201,50 @@ function trimLines(event, side) {
     //get selection
     var selections = editor.selections;
     selections.forEach(selection => {
-        var select = editor.document.getText(selection);
-        var res = utils.do_trim(select, side);
-
+        var text = editor.document.getText(selection);
+        var res = utils.do_trim(text, side);
+        console.log('trim line ' + selection.start.line);
         // format text
         editor.edit((edit) => {
             edit.replace(selection, res);
         });
     });
+}
+
+function cmd_wrap(event) {
+    // get active text editor
+    var editor = vscode.window.activeTextEditor;
+
+    // do nothing if no open text editor
+    if (!editor) return;
+
+    //get selection
+    var selections = editor.selections;
+    vscode.window.showInputBox({ prompt: 'input the wrapper, use $1 for the original' }).then(
+        wrap_str => {
+            if (wrap_str.indexOf('$1') < 0) {
+                vscode.window.showWarningMessage('without "$1", the wrap will replace the select text!')
+            }
+
+            selections.forEach(selection => {
+                var text = editor.document.getText(selection);
+
+                var newline = utils.getNewLine(text);
+                var lines = utils.do_split_line(text);
+                var lines2: String[] = [];
+                lines.forEach(line => {
+                    var temp = wrap_str.replace('$1', line);
+                    console.warn('temp:' + temp);
+                    lines2.push(temp);
+                });
+                var res = utils.do_combine_line(lines2, newline);
+                // format text
+                editor.edit((edit) => {
+                    edit.replace(selection, res);
+                });
+            });
+        }
+    );
 }
 
 // this method is called when your extension is activated
@@ -215,20 +253,24 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Use the console to output diagnostic information (console.log) and errors (console.error)
     // This line of code will only be executed once when your extension is activated
-    //console.log('Congratulations, your extension "column-edit" is now active!');
+    console.log('Congratulations, your extension "edlin" is now active!');
 
     // The command has been defined in the package.json file
     // Now provide the implementation of the command with  registerCommand
     // The commandId parameter must match the command field in package.json
     var disposable = null;
-
+    //wrap
+    disposable = vscode.commands.registerCommand('edlin.wrap', () => {
+        cmd_wrap(CONTEXT_COMMAND);
+    });
+    context.subscriptions.push(disposable);
     //index
     disposable = vscode.commands.registerCommand('edlin.index', () => {
         cmd_index(CONTEXT_COMMAND);
     });
     context.subscriptions.push(disposable);
-    disposable = vscode.commands.registerCommand('edlin.indexWith', () => {
-        cmd_indexWith(CONTEXT_COMMAND);
+    disposable = vscode.commands.registerCommand('edlin.indexFrom', () => {
+        cmd_indexFrom(CONTEXT_COMMAND);
     });
     context.subscriptions.push(disposable);
 
