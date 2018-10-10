@@ -23,14 +23,15 @@ MENTION: `only work while select something`.
 - `Combine` (`join`) selected lines
     - join (**a\nb => ab**)
     - join with specific string (**a\nb => a,b**)
-- `No sort`
-    - **vscode build-in**
+- `Wrap` the selected lines:
+    - use **$1** as original like regex
 - `Index` the selected lines:
     - **only allow number index and in format: "1. "**
     - can index from a given number (only numbers)
 - Auto adapt `Windows/MacOS/Unix`
     - \r, \n, \r\n
-
+- `No sort`
+    - **vscode build-in**
 ### Menu
 - Context menu for all edline function above.
 
@@ -41,7 +42,8 @@ MENTION: `only work while select something`.
 
 ## Release Notes
 May see the catalog for details.
-* [0.4.0] Add Index(With), Combine(With).
+* [0.5.0] Add wrap(using $1 like regex).
+* [0.4.0] Add Index(from), Combine(With).
 * [0.3.0] Add command category for convenience; Add a simple index function.
 * [0.2.0] Update the support of Windows, Unix, and MacOS.
 * [0.1.0] Support Windows, Unix, and MacOS now.
