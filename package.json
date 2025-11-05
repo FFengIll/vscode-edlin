@@ -3,13 +3,13 @@
     "displayName": "edlin",
     "description": "Trim, Remove, Split, Combine, Index for Line Edit and so on (so it is Edlin)",
     "author": {
-        "name": "FFengIll"
+        "name": "FengYouzheng"
     },
     "repository": {
         "url": "https://github.com/FengYouzheng/vscode-edlin"
     },
     "version": "1.0.0",
-    "publisher": "FFengIll",
+    "publisher": "FengYouzheng",
     "engines": {
         "vscode": "^1.74.0"
     },
