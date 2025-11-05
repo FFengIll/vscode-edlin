@@ -1,61 +1,95 @@
-# edlin README
-This extension will help to edit line, so it is edlin.
+# Edlin - Line Editing Extension for VSCode
 
-MENTION: `only work while select something`.
-
-## Usage
-- `Select` the text / line at first.
-- `Click right button` to choose the function in menu;
-- Or use `Command Pallete` (some only work here, e.g. `Index From`).
-- `Choose the function` you wanna!
-- Some comman
+A powerful VSCode extension for line-based text manipulation. Provides efficient tools for trimming, combining, splitting, indexing, and wrapping text selections.
 
 ![feature](feature.png)
 
 ## Features
-### Edit
-- `Trim` the selected lines
-    - left, right or both sides
-- `Remove blank` lines in selection
-- `Split` current line by the selected word (as splitor)
-    - keep the splitor (**a,b => a\nb**)
-    - or not (**a,b => a,\nb**)
-- `Combine` (`join`) selected lines
-    - join (**a\nb => ab**)
-    - join with specific string (**a\nb => a,b**)
-- `Wrap` the selected lines:
-    - use **$1** as original like regex
-- `Index` the selected lines:
-    - **only allow number index and in format: "1. "**
-    - can index from a given number (only numbers)
-- Auto adapt `Windows/MacOS/Unix`
-    - \r, \n, \r\n
-- `No sort`
-    - **vscode build-in**
-### Menu
-- Context menu for all edline function above.
 
-## Known Issues
-* [0.2.0] (fixed) Some functions not work in some systems (e.g.MacOS)
-* [0.1.0] (fixed) MacOS can not use the trim function.
-* [0.0.2] (fixed) Can not remove blank line in some file. It comes from the wrong splitor.
+### Core Operations
+- **Trim**: Remove whitespace from both sides, left, or right of lines
+- **Split**: Split lines using selected text as delimiter (keep or remove delimiter)
+- **Combine**: Join multiple lines together (with custom separator)
+- **Index**: Add numbered prefixes to lines (start from custom number)
+- **Wrap**: Wrap lines using templates with `$1` placeholder
+- **Remove Blank Lines**: Clean up empty lines from selections
 
-## Release Notes
-May see the catalog for details.
-* [0.5.0] Add wrap(using $1 like regex).
-* [0.4.0] Add Index(from), Combine(With).
-* [0.3.0] Add command category for convenience; Add a simple index function.
-* [0.2.0] Update the support of Windows, Unix, and MacOS.
-* [0.1.0] Support Windows, Unix, and MacOS now.
-* [0.0.3] All features completed.
-* [0.0.1] Initial release of edlin.
+### Cross-Platform Support
+- Automatically handles different line endings: `\r\n` (Windows), `\n` (Unix), `\r` (Mac)
+- Works seamlessly across all operating systems
 
-## Misc
-Source code in [Github](https://github.com/FFengIll/vscode-edlin)
-under [MIT Lisence](https://mit-license.org/).
+## Usage
 
-Thanks to 
-[上位者的怜悯](http://www.cnblogs.com/lianmin/p/5499266.html)
-[rintoj](https://github.com/rintoj/blank-line-organizer)
+1. **Select text** in your editor
+2. **Right-click** and choose an Edlin command from the context menu
+3. **Or use Command Palette** (`Ctrl+Shift+P` / `Cmd+Shift+P`) and search for "Edlin"
 
-**Enjoy!**
+### Quick Examples
+
+**Wrap with template:**
+```
+Selected: hello, world
+Template: console.log($1)
+Result:
+console.log(hello)
+console.log(world)
+```
+
+**Combine lines:**
+```
+Selected:
+hello
+world
+Separator: ", "
+Result: hello, world
+```
+
+**Index lines:**
+```
+Selected:
+item one
+item two
+Result:
+1. item one
+2. item two
+```
+
+## Requirements
+
+- Visual Studio Code 1.74.0 or higher
+
+## Installation
+
+1. Open VSCode Extensions (`Ctrl+Shift+X`)
+2. Search for "edlin"
+3. Click Install
+
+Or install from [VSCode Marketplace](https://marketplace.visualstudio.com/items?itemName=FFengIll.edlin)
+
+## Development
+
+```bash
+# Install dependencies
+pnpm install
+
+# Compile TypeScript
+pnpm run compile
+
+# Run tests
+pnpm test
+```
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for details.
+
+## License
+
+MIT License - see [LICENSE](LICENSE) file for details.
+
+## Credits
+
+- Inspired by the classic MS-DOS EDLIN editor
+- Thanks to [上位者的怜悯](http://www.cnblogs.com/lianmin/p/5499266.html)
+
+If you find this extension helpful, please ⭐ star the repository!
