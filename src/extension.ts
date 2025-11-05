@@ -1,321 +1,239 @@
-'use strict';
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import * as utils from './utils';
-import { join } from 'path';
+import {
+    EdlinError,
+    ValidationError,
+    EditorError,
+    showError,
+    showWarning,
+    showInfo,
+    safeExecute,
+    validateEditor,
+    validateSelection,
+    validateNonEmpty,
+    validateNumber,
+    showValidatedInputBox
+} from './errorHandling';
+import { performanceTracker, trackPerformance } from './performance';
 
-// constance
-const NAME = 'blankLine';
-const COMMAND = 'process';
-const CONTEXT_SAVE = 'save';
-const CONTEXT_COMMAND = 'command';
+const COMMAND_PREFIX = 'edlin';
 
-// configuration definition
-interface ExtensionConfig {
-    keepOneEmptyLine?: boolean;
-    triggerOnSave?: boolean;
-    insertLineAfterBlock?: boolean;
-    languageIds?: string[];
-}
+type CommandHandler = () => void | Promise<void>;
 
-// default configuration
-let config: ExtensionConfig = {
-    keepOneEmptyLine: true,
-    triggerOnSave: true,
-    insertLineAfterBlock: true,
-    languageIds: ['javascript', 'typescript', 'json']
-};
+class EdlinExtension {
+    private readonly context: vscode.ExtensionContext;
+    private readonly commands: Map<string, CommandHandler> = new Map();
 
-//default use the tab as splitor
-const DEFAULT_SPLITOR = '\t';
-let splitor = DEFAULT_SPLITOR;
-
-function getSplitor() {
-    // get active text editor
-    var editor = vscode.window.activeTextEditor;
-
-    var selection = editor.selection;
-    splitor = editor.document.getText(selection);
-    /*
-    //if no splitor given, use default
-    if (splitor.length <= 0) {
-        splitor = DEFAULT_SPLITOR;
+    constructor(context: vscode.ExtensionContext) {
+        this.context = context;
+        this.initializeCommands();
+        this.registerCommands();
     }
-    */
 
-    return splitor;
-}
+    private initializeCommands(): void {
+        this.commands.set('wrap', () => safeExecute(this.handleWrap.bind(this), 'Failed to wrap lines'));
+        this.commands.set('index', () => safeExecute(this.handleIndex.bind(this), 'Failed to index lines'));
+        this.commands.set('indexFrom', () => safeExecute(this.handleIndexFrom.bind(this), 'Failed to index lines from custom start'));
+        this.commands.set('trim', () => safeExecute(() => this.handleTrim(utils.Side.BOTH), 'Failed to trim lines'));
+        this.commands.set('ltrim', () => safeExecute(() => this.handleTrim(utils.Side.LEFT), 'Failed to trim left side'));
+        this.commands.set('rtrim', () => safeExecute(() => this.handleTrim(utils.Side.RIGHT), 'Failed to trim right side'));
+        this.commands.set('removeBlankLine', () => safeExecute(this.handleRemoveBlankLines.bind(this), 'Failed to remove blank lines'));
+        this.commands.set('split', () => safeExecute(() => this.handleSplit(false), 'Failed to split lines'));
+        this.commands.set('splitAndKeep', () => safeExecute(() => this.handleSplit(true), 'Failed to split lines (keep delimiter)'));
+        this.commands.set('combine', () => safeExecute(this.handleCombine.bind(this), 'Failed to combine lines'));
+        this.commands.set('combineWith', () => safeExecute(this.handleCombineWith.bind(this), 'Failed to combine lines with custom separator'));
+    }
 
-function action_index(editor, id = 1) {
-    //get selection
-    var doc = editor.document;
-    var selections = editor.selections;
-    console.log('index from: ' + id);
-    selections.forEach(selection => {
-        var start = new vscode.Position(selection.start.line, 0);
-        var end = new vscode.Position(selection.end.line, selection.end.character);
-        var range = new vscode.Range(start, end);
-        var text = editor.document.getText(range);
-
-        var res = utils.do_index(text, id);
-
-        //replace in edit
-        editor.edit((edit) => {
-            edit.replace(range, res);
-
-        });
-    });
-}
-
-function cmd_indexFrom(event) {
-    // get active text editor
-    var editor = vscode.window.activeTextEditor;
-
-    // do nothing if 'doAction' was triggered by save and 'removeOnSave' is set to false
-    if (event === CONTEXT_SAVE && config.triggerOnSave !== true) return;
-
-    // do nothing if no open text editor
-    if (!editor) return;
-
-    vscode.window.showInputBox({ prompt: 'index with' }).then(
-        id_str => {
-            var id = parseInt(id_str);
-            action_index(editor, id);
+    private registerCommands(): void {
+        for (const [commandName, handler] of this.commands) {
+            const fullName = `${COMMAND_PREFIX}.${commandName}`;
+            const disposable = vscode.commands.registerCommand(fullName, handler);
+            this.context.subscriptions.push(disposable);
         }
-    )
-}
+    }
 
-function cmd_index(event) {
-    // get active text editor
-    var editor = vscode.window.activeTextEditor;
+    private getActiveEditor(): vscode.TextEditor | undefined {
+        return vscode.window.activeTextEditor;
+    }
 
-    // do nothing if 'doAction' was triggered by save and 'removeOnSave' is set to false
-    if (event === CONTEXT_SAVE && config.triggerOnSave !== true) return;
+    @trackPerformance('wrap')
+    private async handleWrap(): Promise<void> {
+        const editor = validateEditor(this.getActiveEditor());
+        validateSelection(editor, true);
 
-    // do nothing if no open text editor
-    if (!editor) return;
-
-    action_index(editor, 1);
-}
-
-function split(event, keep = false) {
-
-    // get active text editor
-    var editor = vscode.window.activeTextEditor;
-
-    // do nothing if 'doAction' was triggered by save and 'removeOnSave' is set to false
-    if (event === CONTEXT_SAVE && config.triggerOnSave !== true) return;
-
-    // do nothing if no open text editor
-    if (!editor) return;
-
-    //get selection
-    var splitor = getSplitor();
-    var doc = editor.document;
-    var selections = editor.selections;
-    selections.forEach(selection => {
-        //get selection info of the cursor
-        var start = selection.start;
-
-        //get line text (*note* the select is splitor only but we wanna split line)
-        var vsline = doc.lineAt(start);
-
-        var res = utils.do_split(vsline.text, splitor, keep);
-
-        //replace in edit
-        editor.edit((edit) => {
-            edit.replace(vsline.range, res);
-
-        });
-    });
-}
-
-function action_combine(join_str: String = '') {
-    // get active text editor
-    var editor = vscode.window.activeTextEditor;
-
-    // do nothing if no open text editor
-    if (!editor) return;
-
-    //get selection
-    var doc = editor.document;
-    var selections = editor.selections;
-    console.log('combine with: ' + join_str);
-    selections.forEach(selection => {
-        //get range
-        let start = selection.start;
-        let end = selection.end;
-
-        var text = editor.document.getText(selection);
-        var res = utils.do_combine(text, join_str);
-
-        //replace in edit
-        editor.edit((edit) => {
-            edit.replace(new vscode.Range(start, end), res);
-        });
-    });
-}
-
-function cmd_combine(event) {
-    action_combine('');
-}
-
-
-function cmd_combineWith(event) {
-    vscode.window.showInputBox({ prompt: 'combine (join) with' }).then(
-        join_str => {
-            action_combine(join_str);
-        }
-    )
-}
-
-
-// remove empty lines
-function removeBlankLines(event) {
-    // get active text editor
-    var editor = vscode.window.activeTextEditor;
-
-    // do nothing if no open text editor
-    if (!editor) return;
-
-    //get selection
-    var selections = editor.selections;
-    selections.forEach(selection => {
-        var text = editor.document.getText(selection);
-        var res = utils.do_remove(text);
-        // format text
-        editor.edit((edit) => {
-            edit.replace(selection, res);
-        });
-    });
-}
-
-function trimLines(event, side) {
-    // get active text editor
-    var editor = vscode.window.activeTextEditor;
-
-    // do nothing if no open text editor
-    if (!editor) return;
-
-    //get selection
-    var selections = editor.selections;
-    selections.forEach(selection => {
-        var text = editor.document.getText(selection);
-        var res = utils.do_trim(text, side);
-        console.log('trim line ' + selection.start.line);
-        // format text
-        editor.edit((edit) => {
-            edit.replace(selection, res);
-        });
-    });
-}
-
-function cmd_wrap(event) {
-    // get active text editor
-    var editor = vscode.window.activeTextEditor;
-
-    // do nothing if no open text editor
-    if (!editor) return;
-
-    //get selection
-    var selections = editor.selections;
-    vscode.window.showInputBox({ prompt: 'input the wrapper, use $1 for the original' }).then(
-        wrap_str => {
-            if (wrap_str.indexOf('$1') < 0) {
-                vscode.window.showWarningMessage('without "$1", the wrap will replace the select text!')
+        const wrapTemplate = await showValidatedInputBox({
+            prompt: 'Input the wrapper template',
+            placeHolder: 'Example: console.log($1)',
+            validateInput: (value: string) => {
+                if (!value || value.trim().length === 0) {
+                    return 'Template cannot be empty';
+                }
+                if (!value.includes('$1')) {
+                    return 'Warning: Template without "$1" will replace selected text!';
+                }
+                return null;
             }
+        });
 
-            selections.forEach(selection => {
-                var text = editor.document.getText(selection);
+        if (!wrapTemplate) return;
 
-                var newline = utils.getNewLine(text);
-                var lines = utils.do_split_line(text);
-                var lines2: String[] = [];
-                lines.forEach(line => {
-                    var temp = wrap_str.replace('$1', line);
-                    console.warn('temp:' + temp);
-                    lines2.push(temp);
-                });
-                var res = utils.do_combine_line(lines2, newline);
-                // format text
-                editor.edit((edit) => {
-                    edit.replace(selection, res);
-                });
-            });
+        const selections = editor.selections;
+        await editor.edit((editBuilder) => {
+            for (const selection of selections) {
+                const text = editor.document.getText(selection);
+                const processedText = this.wrapLines(text, wrapTemplate);
+                editBuilder.replace(selection, processedText);
+            }
+        });
+
+        showInfo(`Wrapped ${selections.length} selection(s)`);
+    }
+
+    private wrapLines(text: string, template: string): string {
+        const newLine = utils.getNewLine(text);
+        const lines = utils.do_split_line(text);
+        const wrappedLines = lines.map(line => template.replace('$1', line));
+        return utils.do_combine_line(wrappedLines, newLine);
+    }
+
+    private async handleIndexFrom(): Promise<void> {
+        const editor = validateEditor(this.getActiveEditor());
+        validateSelection(editor, true);
+
+        const startIndexStr = await showValidatedInputBox({
+            prompt: 'Enter starting index number',
+            placeHolder: '1',
+            validateInput: (value: string) => {
+                try {
+                    validateNumber(value, 'Start index', 0);
+                    return null;
+                } catch (error) {
+                    return error instanceof Error ? error.message : 'Invalid input';
+                }
+            }
+        });
+
+        if (!startIndexStr) return;
+
+        const startIndex = parseInt(startIndexStr, 10);
+        this.indexLines(startIndex);
+    }
+
+    private handleIndex(): void {
+        const editor = validateEditor(this.getActiveEditor());
+        validateSelection(editor, true);
+        this.indexLines(1);
+    }
+
+    private indexLines(startIndex: number): void {
+        const editor = validateEditor(this.getActiveEditor());
+        const selections = validateSelection(editor, true);
+
+        editor.edit((editBuilder) => {
+            for (const selection of selections) {
+                const start = new vscode.Position(selection.start.line, 0);
+                const end = new vscode.Position(selection.end.line, selection.end.character);
+                const range = new vscode.Range(start, end);
+                const text = editor.document.getText(range);
+                const indexedText = utils.do_index(text, startIndex);
+                editBuilder.replace(range, indexedText);
+            }
+        });
+
+        showInfo(`Indexed ${selections.length} selection(s) starting from ${startIndex}`);
+    }
+
+    @trackPerformance('trim')
+    private handleTrim(side: utils.Side): void {
+        const editor = validateEditor(this.getActiveEditor());
+        const selections = validateSelection(editor, true);
+
+        editor.edit((editBuilder) => {
+            for (const selection of selections) {
+                const text = editor.document.getText(selection);
+                const trimmedText = utils.do_trim(text, side);
+                editBuilder.replace(selection, trimmedText);
+            }
+        });
+
+        showInfo(`Trimmed ${selections.length} selection(s) (${side})`);
+    }
+
+    private handleRemoveBlankLines(): void {
+        const editor = validateEditor(this.getActiveEditor());
+        const selections = validateSelection(editor, true);
+
+        editor.edit((editBuilder) => {
+            for (const selection of selections) {
+                const text = editor.document.getText(selection);
+                const processedText = utils.do_remove(text);
+                editBuilder.replace(selection, processedText);
+            }
+        });
+
+        showInfo(`Removed blank lines from ${selections.length} selection(s)`);
+    }
+
+    private handleSplit(keepDelimiter: boolean): void {
+        const editor = validateEditor(this.getActiveEditor());
+        const selections = validateSelection(editor, true);
+
+        const nonEmptySelections = selections.filter(selection => !selection.isEmpty);
+        if (nonEmptySelections.length === 0) {
+            throw new ValidationError('Please select some text to use as a delimiter');
         }
-    );
+
+        editor.edit((editBuilder) => {
+            for (const selection of nonEmptySelections) {
+                const delimiter = editor.document.getText(selection);
+                const line = editor.document.lineAt(selection.start);
+                const processedText = utils.do_split(line.text, delimiter, keepDelimiter);
+                editBuilder.replace(line.range, processedText);
+            }
+        });
+
+        showInfo(`Split ${nonEmptySelections.length} line(s) ${keepDelimiter ? '(keeping delimiter)' : ''}`);
+    }
+
+    private handleCombine(): void {
+        this.combineLines('');
+    }
+
+    private async handleCombineWith(): Promise<void> {
+        const editor = validateEditor(this.getActiveEditor());
+        validateSelection(editor, true);
+
+        const joinString = await showValidatedInputBox({
+            prompt: 'Enter string to join lines with',
+            placeHolder: ' '
+        });
+
+        if (joinString === null) return;
+        this.combineLines(joinString);
+    }
+
+    @trackPerformance('combine')
+    private combineLines(joinString: string): void {
+        const editor = validateEditor(this.getActiveEditor());
+        const selections = validateSelection(editor, true);
+
+        editor.edit((editBuilder) => {
+            for (const selection of selections) {
+                const text = editor.document.getText(selection);
+                const combinedText = utils.do_combine(text, joinString);
+                editBuilder.replace(selection, combinedText);
+            }
+        });
+
+        showInfo(`Combined ${selections.length} selection(s) with separator: "${joinString || '(empty)'}"`);
+    }
 }
 
-// this method is called when your extension is activated
-// your extension is activated the very first time the command is executed
-export function activate(context: vscode.ExtensionContext) {
-
-    // Use the console to output diagnostic information (console.log) and errors (console.error)
-    // This line of code will only be executed once when your extension is activated
-    console.log('Congratulations, your extension "edlin" is now active!');
-
-    // The command has been defined in the package.json file
-    // Now provide the implementation of the command with  registerCommand
-    // The commandId parameter must match the command field in package.json
-    var disposable = null;
-    //wrap
-    disposable = vscode.commands.registerCommand('edlin.wrap', () => {
-        cmd_wrap(CONTEXT_COMMAND);
-    });
-    context.subscriptions.push(disposable);
-    //index
-    disposable = vscode.commands.registerCommand('edlin.index', () => {
-        cmd_index(CONTEXT_COMMAND);
-    });
-    context.subscriptions.push(disposable);
-    disposable = vscode.commands.registerCommand('edlin.indexFrom', () => {
-        cmd_indexFrom(CONTEXT_COMMAND);
-    });
-    context.subscriptions.push(disposable);
-
-    // trim
-    disposable = vscode.commands.registerCommand('edlin.trim', () => {
-        trimLines(CONTEXT_COMMAND, utils.Side.BOTH);
-    });
-    context.subscriptions.push(disposable);
-    disposable = vscode.commands.registerCommand('edlin.ltrim', () => {
-        trimLines(CONTEXT_COMMAND, utils.Side.LEFT);
-    });
-    context.subscriptions.push(disposable);
-    disposable = vscode.commands.registerCommand('edlin.rtrim', () => {
-        trimLines(CONTEXT_COMMAND, utils.Side.RIGHT);
-    });
-    context.subscriptions.push(disposable);
-
-    //add cmd to remove blank
-    disposable = vscode.commands.registerCommand('edlin.removeBlankLine', () => {
-        removeBlankLines(CONTEXT_COMMAND);
-    });
-    context.subscriptions.push(disposable);
-
-    //split
-    disposable = vscode.commands.registerCommand('edlin.split', () => {
-        split(CONTEXT_COMMAND);
-    });
-    context.subscriptions.push(disposable);
-
-    disposable = vscode.commands.registerCommand('edlin.splitAndKeep', () => {
-        split(CONTEXT_COMMAND, true);
-    });
-    context.subscriptions.push(disposable);
-
-    //combine
-    disposable = vscode.commands.registerCommand('edlin.combine', () => {
-        cmd_combine(CONTEXT_COMMAND);
-    });
-    context.subscriptions.push(disposable);
-
-    disposable = vscode.commands.registerCommand('edlin.combineWith', () => {
-        cmd_combineWith(CONTEXT_COMMAND);
-    });
-    context.subscriptions.push(disposable);
+export function activate(context: vscode.ExtensionContext): void {
+    console.log('Edlin extension is now active!');
+    new EdlinExtension(context);
 }
 
-// this method is called when your extension is deactivated
-export function deactivate() { }
+export function deactivate(): void {
+    // Cleanup if needed
+}
