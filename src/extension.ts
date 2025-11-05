@@ -1,20 +1,14 @@
 import * as vscode from 'vscode';
 import * as utils from './utils';
 import {
-    EdlinError,
     ValidationError,
-    EditorError,
-    showError,
-    showWarning,
-    showInfo,
     safeExecute,
     validateEditor,
     validateSelection,
-    validateNonEmpty,
     validateNumber,
-    showValidatedInputBox
+    showValidatedInputBox,
+    showInfo
 } from './errorHandling';
-import { performanceTracker, trackPerformance } from './performance';
 
 const COMMAND_PREFIX = 'edlin';
 
@@ -56,7 +50,6 @@ class EdlinExtension {
         return vscode.window.activeTextEditor;
     }
 
-    @trackPerformance('wrap')
     private async handleWrap(): Promise<void> {
         const editor = validateEditor(this.getActiveEditor());
         validateSelection(editor, true);
@@ -143,7 +136,6 @@ class EdlinExtension {
         showInfo(`Indexed ${selections.length} selection(s) starting from ${startIndex}`);
     }
 
-    @trackPerformance('trim')
     private handleTrim(side: utils.Side): void {
         const editor = validateEditor(this.getActiveEditor());
         const selections = validateSelection(editor, true);
@@ -208,11 +200,10 @@ class EdlinExtension {
             placeHolder: ' '
         });
 
-        if (joinString === null) return;
+        if (joinString === undefined) return;
         this.combineLines(joinString);
     }
 
-    @trackPerformance('combine')
     private combineLines(joinString: string): void {
         const editor = validateEditor(this.getActiveEditor());
         const selections = validateSelection(editor, true);
@@ -237,3 +228,5 @@ export function activate(context: vscode.ExtensionContext): void {
 export function deactivate(): void {
     // Cleanup if needed
 }
+
+export { EdlinExtension };

@@ -104,7 +104,7 @@ export function validateSelection(
     if (requireNonEmpty && editor.selections.every(sel => sel.isEmpty)) {
         throw new ValidationError('Please select some text first');
     }
-    return editor.selections;
+    return [...editor.selections];
 }
 
 /**

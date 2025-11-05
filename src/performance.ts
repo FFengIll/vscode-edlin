@@ -102,7 +102,7 @@ export const performanceTracker = new PerformanceTracker();
  * @param operationName - Name of the operation for tracking
  */
 export function trackPerformance(operationName: string) {
-    return function (target: any, propertyName: string, descriptor: PropertyDescriptor) {
+    return function (_target: any, _propertyName: string, descriptor: PropertyDescriptor) {
         const method = descriptor.value;
 
         descriptor.value = function (...args: any[]) {
@@ -168,7 +168,9 @@ export function memoize<T extends (...args: any[]) => any>(func: T): T {
         // Limit cache size to prevent memory issues
         if (cache.size > 100) {
             const firstKey = cache.keys().next().value;
-            cache.delete(firstKey);
+            if (firstKey !== undefined) {
+                cache.delete(firstKey);
+            }
         }
 
         return result;
