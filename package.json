@@ -8,7 +8,7 @@
     "repository": {
         "url": "https://github.com/FengYouzheng/vscode-edlin"
     },
-    "version": "1.0.0",
+    "version": "1.0.1",
     "publisher": "FengYouzheng",
     "engines": {
         "vscode": "^1.74.0"
