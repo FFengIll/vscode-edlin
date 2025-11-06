@@ -1,0 +1,23 @@
+import * as assert from 'assert';
+
+// You can import and use all API from the 'vscode' module
+// as well as import your extension to test it
+import * as vscode from 'vscode';
+import { do_split } from '../utils';
+// import * as myExtension from '../../extension';
+
+suite('Extension Test Suite', () => {
+    vscode.window.showInformationMessage('Start all tests.');
+
+    // Defines a Mocha unit test
+    test("Something 1", () => {
+        assert.equal(-1, [1, 2, 3].indexOf(5));
+        assert.equal(-1, [1, 2, 3].indexOf(0));
+    });
+    test('do split', () => {
+        assert.equal(do_split("a b c", " ", false).toString(), ["a", "b", "c"].toString())
+        assert.equal(do_split("a b c", " ", true).toString(), ["a ", "b ", "c"].toString())
+        assert.equal(do_split("a<=b<=c", "<=", false).toString(), ["a", "b", "c"].toString())
+    }
+    );
+});
