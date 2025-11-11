@@ -2,7 +2,7 @@
 
 A powerful VSCode extension for line-based text manipulation. Provides efficient tools for trimming, combining, splitting, indexing, and wrapping text selections.
 
-![feature](feature.png)
+![feature](https://github.com/FFengIll/vscode-edlin/blob/master/feature.png?raw=true)
 
 ## Features
 
