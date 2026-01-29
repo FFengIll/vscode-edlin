@@ -5,7 +5,20 @@ All notable changes to the "edlin" extension will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.0] - 2025-11-05
+## [1.0.1] - 2026-01-29
+
+### Fixed
+- **Command Registration**: Fixed critical command registration mismatches
+  - `removeBlankLine` now correctly registered (was `removeEmptyLine`)
+  - `split` now correctly registered (was `splitBy`)
+  - Added missing `splitAndKeep` command
+  - Added missing `combine` command
+  - `combineWith` now correctly registered (was `joinWith`)
+- **Build Configuration**: Fixed launch.json outFiles path
+- **Dependencies**: Added missing ESLint dependencies
+- **Git Configuration**: Updated .gitignore to exclude build artifacts
+
+## [1.0.0] - 2025-01-29
 
 ### Added
 - **Major Code Refactor**: Complete modernization of the codebase
