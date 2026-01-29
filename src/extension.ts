@@ -1,14 +1,14 @@
 import * as vscode from 'vscode';
-import * as utils from './utils';
 import {
     ValidationError,
     safeExecute,
-    validateEditor,
-    validateSelection,
-    validateNumber,
+    showInfo,
     showValidatedInputBox,
-    showInfo
+    validateEditor,
+    validateNumber,
+    validateSelection
 } from './errorHandling';
+import * as utils from './utils';
 
 const COMMAND_PREFIX = 'edlin';
 
@@ -31,11 +31,11 @@ class EdlinExtension {
         this.commands.set('trim', () => safeExecute(() => this.handleTrim(utils.Side.BOTH), 'Failed to trim lines'));
         this.commands.set('ltrim', () => safeExecute(() => this.handleTrim(utils.Side.LEFT), 'Failed to trim left side'));
         this.commands.set('rtrim', () => safeExecute(() => this.handleTrim(utils.Side.RIGHT), 'Failed to trim right side'));
-        this.commands.set('removeBlankLine', () => safeExecute(this.handleRemoveBlankLines.bind(this), 'Failed to remove blank lines'));
-        this.commands.set('split', () => safeExecute(() => this.handleSplit(false), 'Failed to split lines'));
-        this.commands.set('splitAndKeep', () => safeExecute(() => this.handleSplit(true), 'Failed to split lines (keep delimiter)'));
+        this.commands.set('removeBlankLine', () => safeExecute(this.handleRemoveEmptyLines.bind(this), 'Failed to remove blank lines'));
+        this.commands.set('split', () => safeExecute(() => this.handleSplitBy(false), 'Failed to split lines'));
+        this.commands.set('splitAndKeep', () => safeExecute(() => this.handleSplitBy(true), 'Failed to split lines (keeping delimiter)'));
         this.commands.set('combine', () => safeExecute(this.handleCombine.bind(this), 'Failed to combine lines'));
-        this.commands.set('combineWith', () => safeExecute(this.handleCombineWith.bind(this), 'Failed to combine lines with custom separator'));
+        this.commands.set('combineWith', () => safeExecute(this.handleJoinWith.bind(this), 'Failed to combine lines with custom string'));
     }
 
     private registerCommands(): void {
@@ -151,7 +151,7 @@ class EdlinExtension {
         showInfo(`Trimmed ${selections.length} selection(s) (${side})`);
     }
 
-    private handleRemoveBlankLines(): void {
+    private handleRemoveEmptyLines(): void {
         const editor = validateEditor(this.getActiveEditor());
         const selections = validateSelection(editor, true);
 
@@ -166,7 +166,7 @@ class EdlinExtension {
         showInfo(`Removed blank lines from ${selections.length} selection(s)`);
     }
 
-    private handleSplit(keepDelimiter: boolean): void {
+    private handleSplitBy(keepDelimiter: boolean): void {
         const editor = validateEditor(this.getActiveEditor());
         const selections = validateSelection(editor, true);
 
@@ -191,7 +191,7 @@ class EdlinExtension {
         this.combineLines('');
     }
 
-    private async handleCombineWith(): Promise<void> {
+    private async handleJoinWith(): Promise<void> {
         const editor = validateEditor(this.getActiveEditor());
         validateSelection(editor, true);
 
