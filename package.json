@@ -11,7 +11,7 @@
     "version": "1.260129.1700",
     "publisher": "FengYouzheng",
     "engines": {
-        "vscode": "^1.74.0"
+        "vscode": "^1.100.0"
     },
     "categories": [
         "Other"
@@ -161,7 +161,7 @@
         "@types/mocha": "^10.0.10",
         "@types/node": "^24.10.9",
         "@types/sinon": "^17.0.4",
-        "@types/vscode": "^1.108.1",
+        "@types/vscode": "^1.100.0",
         "@typescript-eslint/eslint-plugin": "^8.54.0",
         "@typescript-eslint/parser": "^8.54.0",
         "eslint": "^9.39.2",
