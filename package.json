@@ -29,7 +29,7 @@
         "onCommand:edlin.combineWith",
         "onCommand:edlin.removeBlankLine"
     ],
-    "main": "./out/src/extension",
+    "main": "./out/extension",
     "contributes": {
         "title": "Edlin",
         "commands": [
@@ -159,12 +159,16 @@
     },
     "devDependencies": {
         "@types/mocha": "^10.0.10",
-        "@types/node": "^24.10.0",
-        "@types/sinon": "^17.0.3",
-        "@types/vscode": "^1.74.0",
-        "glob": "^11.0.1",
+        "@types/node": "^24.10.9",
+        "@types/sinon": "^17.0.4",
+        "@types/vscode": "^1.108.1",
+        "@typescript-eslint/eslint-plugin": "^8.54.0",
+        "@typescript-eslint/parser": "^8.54.0",
+        "eslint": "^9.39.2",
+        "glob": "^11.1.0",
         "mocha": "^11.7.5",
         "sinon": "^18.0.1",
-        "typescript": "^5.9.3"
+        "typescript": "^5.9.3",
+        "vscode-test": "^1.6.1"
     }
 }
